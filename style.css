@@ -485,6 +485,9 @@ form button {
     nav .hamburger {
         display: flex;
     }
+    .theme{
+        margin-right: 5px;
+    }
     .landingPage {
         flex-direction: column;
     }

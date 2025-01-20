@@ -10,59 +10,84 @@ document.addEventListener('DOMContentLoaded', function () {
         })
     
         const scrollScale = document.querySelectorAll(".scrollScale")
-        // const   scrollScale = document.querySelectorAll(". scrollScale")
-    
         scrollScale.forEach((el) => observer.observe(el))
-        //  scrollScale.forEach((el) => observer.observe(el))
-    
 
-    // Form validation and handling
-    const form = document.querySelector('.contactForm')
-    const feedbackDiv = document.getElementById('feedback')
-    const validateContactForm = (email, message) => {
-        let errors = []
-        if (!email) {
-            errors.push('Email is required')
-            document.querySelector('input[name="email"]').parentElement.classList.add('incorrect')
-        } else {
-            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
-            if (!emailPattern.test(email)) {
-                errors.push('Please enter a valid email address')
-                document.querySelector('input[name="email"]').parentElement.classList.add('incorrect')
-            }
+    // Select form and feedback elements
+const form = document.querySelector('.contactForm');
+const feedbackDiv = document.getElementById('feedback');
+
+// Form validation function
+const validateContactForm = (email, message) => {
+    let errors = [];
+    if (!email) {
+        errors.push('Email is required');
+        document.querySelector('input[name="email"]').parentElement.classList.add('incorrect');
+    } else {
+        const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        if (!emailPattern.test(email)) {
+            errors.push('Please enter a valid email address');
+            document.querySelector('input[name="email"]').parentElement.classList.add('incorrect');
         }
-        if (!message) {
-            errors.push('Message is required');
-            document.querySelector('textarea[name="message"]').parentElement.classList.add('incorrect')
-        } else if (message.length < 10) {
-            errors.push('Message must be at least 10 characters long')
-            document.querySelector('textarea[name="message"]').parentElement.classList.add('incorrect')
-        }
-        return errors
     }
+    if (!message) {
+        errors.push('Message is required');
+        document.querySelector('textarea[name="message"]').parentElement.classList.add('incorrect');
+    } else if (message.length < 10) {
+        errors.push('Message must be at least 10 characters long');
+        document.querySelector('textarea[name="message"]').parentElement.classList.add('incorrect');
+    }
+    return errors;
+};
 
-    if (form) {
-        form.addEventListener('submit', function (event) {
-            event.preventDefault()
-            const email = document.querySelector('input[name="email"]').value
-            const message = document.querySelector('textarea[name="message"]').value
-            const errors = validateContactForm(email, message)
-            if (errors.length === 0) {
-                feedbackDiv.style.display = 'block'
-                feedbackDiv.innerHTML = 'Sending your message...'
-                fetch(form.action, {
-                    method: 'POST',
-                    body: new FormData(form),
+// Handle form submission
+if (form) {
+    form.addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Get form values
+        const email = document.querySelector('input[name="email"]').value;
+        const message = document.querySelector('textarea[name="message"]').value;
+
+        // Validate form
+        const errors = validateContactForm(email, message);
+        if (errors.length === 0) {
+            // Display sending message
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.style.color = 'black';
+            feedbackDiv.innerHTML = 'Sending your message...';
+
+            // Send data using fetch
+            fetch(form.action, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                body: new FormData(form),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Success response
+                        feedbackDiv.innerHTML = 'Your message has been sent successfully!';
+                        feedbackDiv.style.color = 'green';
+                        form.reset(); // Clear the form after submission
+                    } else {
+                        // Failure response
+                        feedbackDiv.innerHTML = 'There was an issue sending your message.';
+                        feedbackDiv.style.color = 'red';
+                    }
                 })
-                    .then(response => response.ok ? feedbackDiv.innerHTML = 'Your message has been sent successfully!' : Promise.reject('There was an issue sending your message.'))
-                    .catch(error => feedbackDiv.innerHTML = error)
-            } else {
-                feedbackDiv.innerHTML = errors.join('<br>')
-                feedbackDiv.style.color = 'red'
-                feedbackDiv.style.display = 'block'
-            }
-        })
-    }
+                .catch(() => {
+                    // Network or other errors
+                    feedbackDiv.innerHTML = 'There was an issue sending your message.';
+                    feedbackDiv.style.color = 'red';
+                });
+        } else {
+            // Display validation errors
+            feedbackDiv.innerHTML = errors.join('<br>');
+            feedbackDiv.style.color = 'red';
+            feedbackDiv.style.display = 'block';
+        }
+    });
+}
+
 
     // Theme toggle
     const lightIcon = document.querySelector('.theme span:nth-child(1)')
